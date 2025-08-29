@@ -60,7 +60,11 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         if hasattr(self.request.user, 'profile'):
-            serializer.save(company=self.request.user.profile.company)
+            company = self.request.user.profile.company
+            name = serializer.validated_data.get('name')
+            if Product.objects.filter(company=company, name=name).exists():
+                raise serializers.ValidationError({'name': 'A product with this name already exists in your company.'})
+            serializer.save(company=company)
         else:
             raise serializers.ValidationError("Admin user cannot create company-specific resources.")
 
@@ -119,7 +123,11 @@ class MaterialViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         if hasattr(self.request.user, 'profile'):
-            serializer.save(company=self.request.user.profile.company)
+            company = self.request.user.profile.company
+            name = serializer.validated_data.get('name')
+            if Material.objects.filter(company=company, name=name).exists():
+                raise serializers.ValidationError({'name': 'A material with this name already exists in your company.'})
+            serializer.save(company=company)
         else:
             raise serializers.ValidationError("Admin user cannot create company-specific resources.")
 
