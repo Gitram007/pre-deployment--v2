@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/production_order_provider.dart';
+import '../../providers/material_provider.dart';
 import '../../models/product.dart';
 
 class RecordProductionDialog extends StatefulWidget {
