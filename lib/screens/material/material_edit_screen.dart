@@ -57,6 +57,10 @@ class _MaterialEditScreenState extends State<MaterialEditScreen> {
       }
 
       if (mounted) {
+        // Refresh material and low stock lists
+        Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
+        Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Material ${isUpdating ? 'updated' : 'created'} successfully!'),

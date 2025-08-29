@@ -31,6 +31,10 @@ class _RecordProductionDialogState extends State<RecordProductionDialog> {
       );
 
       if (mounted) {
+        // Refresh material and low stock lists
+        Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
+        Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Production order recorded successfully!'),

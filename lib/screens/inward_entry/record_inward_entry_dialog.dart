@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/material.dart' as model;
 import '../../providers/inward_entry_provider.dart';
+import '../../providers/material_provider.dart';
 import 'material_search_dialog.dart';
 
 class RecordInwardEntryDialog extends StatefulWidget {
@@ -39,6 +40,11 @@ class _RecordInwardEntryDialogState extends State<RecordInwardEntryDialog> {
       );
 
       if (mounted) {
+        // This is a new import that will be required.
+        // I need to remember to add it.
+        Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
+        Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Inward entry recorded successfully!'),

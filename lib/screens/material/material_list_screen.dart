@@ -116,6 +116,8 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                                                   await provider
                                                       .deleteMaterial(material.id);
                                                   if (mounted) {
+                                                    // Refresh low stock list
+                                                    Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
                                                     ScaffoldMessenger.of(context)
                                                         .showSnackBar(
                                                       const SnackBar(
