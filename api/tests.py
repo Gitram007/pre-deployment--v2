@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
-from .models import Company, UserProfile, Product, Material, ProductMaterialMapping
+from .models import Company, UserProfile, Product, Material, ProductMaterialMapping, InwardEntry
 
 class CoreApiTests(APITestCase):
     def setUp(self):
@@ -283,3 +283,79 @@ class CalculatorApiTests(APITestCase):
         self.assertEqual(result['current_stock'], 100.0)
         self.assertEqual(result['shortfall'], 5.0)
         self.assertIsInstance(result['shortfall'], float)
+
+
+class ProductionOrderRuleTests(APITestCase):
+    def setUp(self):
+        self.company = Company.objects.create(name="Prod Rule Test Corp")
+        self.admin_user = User.objects.create_user(username='ruleadmin', password='password123')
+        UserProfile.objects.create(user=self.admin_user, company=self.company, role='admin')
+
+        self.product_with_mapping = Product.objects.create(company=self.company, name='Mapped Product')
+        self.product_no_mapping = Product.objects.create(company=self.company, name='Unmapped Product')
+
+        self.material1 = Material.objects.create(company=self.company, name='Material with Inward', unit='kg', quantity=100)
+        self.material2 = Material.objects.create(company=self.company, name='Material without Inward', unit='kg', quantity=100)
+
+        ProductMaterialMapping.objects.create(company=self.company, product=self.product_with_mapping, material=self.material1, fixed_quantity=5)
+        ProductMaterialMapping.objects.create(company=self.company, product=self.product_with_mapping, material=self.material2, fixed_quantity=2)
+
+        # Create an inward entry ONLY for material1
+        InwardEntry.objects.create(company=self.company, material=self.material1, quantity=50)
+
+    def test_production_fails_for_unmapped_product(self):
+        """
+        Ensure creating a production order fails if the product has no material mappings.
+        """
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('productionorder-list')
+        data = {'product': self.product_no_mapping.pk, 'quantity': 10}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('no mapped materials', response.data[0])
+
+    def test_first_production_fails_if_material_has_no_inward_history(self):
+        """
+        Ensure the first production run fails if a mapped material has never had an inward entry.
+        """
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('productionorder-list')
+        data = {'product': self.product_with_mapping.pk, 'quantity': 5}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('has no inward entry record', response.data[0])
+
+    def test_first_production_succeeds_if_all_materials_have_inward_history(self):
+        """
+        Ensure the first production run succeeds if all mapped materials have inward history.
+        """
+        # Create an inward entry for the second material, making it valid
+        InwardEntry.objects.create(company=self.company, material=self.material2, quantity=20)
+
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('productionorder-list')
+        data = {'product': self.product_with_mapping.pk, 'quantity': 5}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_subsequent_production_succeeds_even_without_inward_history(self):
+        """
+        Ensure that after the first production, the inward history check is skipped.
+        """
+        # Create the required inward entry for material2 to allow the first production
+        InwardEntry.objects.create(company=self.company, material=self.material2, quantity=20)
+
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('productionorder-list')
+        data = {'product': self.product_with_mapping.pk, 'quantity': 1}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, "First production failed unexpectedly")
+
+        # Now, all InwardEntry for material2 are gone, but a ProductionOrder exists.
+        # This simulates a scenario where the rule should be bypassed.
+        InwardEntry.objects.filter(material=self.material2).delete()
+
+        # Try to create a second production order
+        data2 = {'product': self.product_with_mapping.pk, 'quantity': 2}
+        response2 = self.client.post(url, data2, format='json')
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED, "Subsequent production failed")
