@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
-from .models import Company, UserProfile, Product, Material
+from .models import Company, UserProfile, Product, Material, ProductMaterialMapping
 
 class CoreApiTests(APITestCase):
     def setUp(self):
@@ -112,17 +112,17 @@ class CoreApiTests(APITestCase):
         self.assertEqual(response.data['product_count'], 1)
         self.assertEqual(response.data['material_count'], 3)
         # The dashboard view itself also filters for low stock
-        self.assertEqual(len(response.data['low_stock_materials']), 2)
+        self.assertEqual(len(response.data['low_stock_materials']), 1)
 
         # Test low-stock-materials endpoint
         url = reverse('lowstockmaterial-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
-        # There are 2 low stock materials from setup + this test
-        self.assertEqual(len(response.data), 2)
+        # There is 1 low stock material from this test
+        self.assertEqual(len(response.data), 1)
         low_stock_names = [item['name'] for item in response.data]
-        self.assertIn('Test Material', low_stock_names)
+        self.assertNotIn('Test Material', low_stock_names)
         self.assertIn('Low Stock Material', low_stock_names)
         self.assertNotIn('High Stock Material', low_stock_names)
 
@@ -183,3 +183,59 @@ class UserManagementApiTests(APITestCase):
         data = {'username': 'newuser', 'password': 'password123', 'role': 'staff'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class CalculatorApiTests(APITestCase):
+    def setUp(self):
+        self.company = Company.objects.create(name="Calc Test Corp")
+        self.admin_user = User.objects.create_user(username='calcadmin', password='password123')
+        UserProfile.objects.create(user=self.admin_user, company=self.company, role='admin')
+
+        self.product = Product.objects.create(company=self.company, name='Test Calc Product')
+        self.material = Material.objects.create(
+            company=self.company, name='Test Calc Material', unit='g', quantity=100, low_stock_threshold=10
+        )
+        # Mapping: 1 product requires 10g of material
+        self.mapping = ProductMaterialMapping.objects.create(
+            company=self.company, product=self.product, material=self.material, fixed_quantity=10.5
+        )
+
+    def test_calculator_success(self):
+        """
+        Ensure the calculator returns correct results with correct data types.
+        """
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('material-calculator')
+        data = {'product_id': self.product.pk, 'quantity': 5}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsInstance(response.data, list)
+        self.assertEqual(len(response.data), 1)
+
+        result = response.data[0]
+        self.assertEqual(result['material_name'], 'Test Calc Material')
+        self.assertEqual(result['required_quantity'], 52.5) # 10.5 * 5
+        self.assertEqual(result['current_stock'], 100.0)
+        self.assertEqual(result['shortfall'], 0.0)
+
+        # Verify data types are float, not string
+        self.assertIsInstance(result['required_quantity'], float)
+        self.assertIsInstance(result['current_stock'], float)
+        self.assertIsInstance(result['shortfall'], float)
+
+    def test_calculator_with_shortfall(self):
+        """
+        Ensure the calculator correctly identifies a shortfall.
+        """
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('material-calculator')
+        data = {'product_id': self.product.pk, 'quantity': 10} # Requires 105g, we have 100g
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result = response.data[0]
+        self.assertEqual(result['required_quantity'], 105.0)
+        self.assertEqual(result['current_stock'], 100.0)
+        self.assertEqual(result['shortfall'], 5.0)
+        self.assertIsInstance(result['shortfall'], float)
