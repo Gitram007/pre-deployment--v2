@@ -126,6 +126,28 @@ class CoreApiTests(APITestCase):
         self.assertIn('Low Stock Material', low_stock_names)
         self.assertNotIn('High Stock Material', low_stock_names)
 
+    def test_duplicate_product_creation_is_prevented(self):
+        """
+        Ensure that creating a product with a duplicate name within the same company fails.
+        """
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('product-list')
+        # This product name already exists from the CoreApiTests setUp
+        data = {'name': 'Test Product'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_duplicate_material_creation_is_prevented(self):
+        """
+        Ensure that creating a material with a duplicate name within the same company fails.
+        """
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('material-list')
+        # This material name already exists from the CoreApiTests setUp
+        data = {'name': 'Test Material', 'unit': 'kg', 'quantity': 10}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class UserManagementApiTests(APITestCase):
     def setUp(self):
@@ -223,6 +245,28 @@ class CalculatorApiTests(APITestCase):
         self.assertIsInstance(result['required_quantity'], float)
         self.assertIsInstance(result['current_stock'], float)
         self.assertIsInstance(result['shortfall'], float)
+
+    def test_product_with_same_name_in_different_company_succeeds(self):
+        """
+        Ensure a product with the same name as one in another company can be created.
+        """
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('product-list')
+        # This product name exists in the company created in CoreApiTests
+        data = {'name': 'Test Product'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_material_with_same_name_in_different_company_succeeds(self):
+        """
+        Ensure a material with the same name as one in another company can be created.
+        """
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('material-list')
+        # This material name exists in the company created in CoreApiTests
+        data = {'name': 'Test Material', 'unit': 'kg', 'quantity': 10}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_calculator_with_shortfall(self):
         """

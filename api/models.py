@@ -24,6 +24,9 @@ class Product(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
 
+    class Meta:
+        unique_together = ('company', 'name')
+
     def __str__(self):
         return self.name
 
@@ -34,6 +37,9 @@ class Material(models.Model):
     unit = models.CharField(max_length=50)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     low_stock_threshold = models.DecimalField(max_digits=10, decimal_places=2, default=10.00)
+
+    class Meta:
+        unique_together = ('company', 'name')
 
     def __str__(self):
         return f"{self.name} ({self.quantity} {self.unit})"
