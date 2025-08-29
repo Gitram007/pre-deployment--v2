@@ -322,9 +322,9 @@ def material_calculator(request):
                 'material_id': material.id,
                 'material_name': material.name,
                 'material_unit': material.unit,
-                'required_quantity': required_quantity,
-                'current_stock': current_stock,
-                'shortfall': shortfall,
+                'required_quantity': float(required_quantity),
+                'current_stock': float(current_stock),
+                'shortfall': float(shortfall),
             })
 
         return Response(results)
