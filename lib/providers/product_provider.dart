@@ -50,6 +50,7 @@ class ProductProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print(e);
+      rethrow;
     }
   }
 
