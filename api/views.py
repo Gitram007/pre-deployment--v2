@@ -187,7 +187,23 @@ class ProductionOrderViewSet(viewsets.ModelViewSet):
 
         product = serializer.validated_data['product']
         quantity = serializer.validated_data['quantity']
+
+        # Rule 1: Ensure the product has material mappings
         mappings = ProductMaterialMapping.objects.filter(product=product)
+        if not mappings.exists():
+            raise serializers.ValidationError(
+                "Production failed: This product has no mapped materials."
+            )
+
+        # Rule 2: For the first production run, ensure all materials have an inward history
+        is_first_production = not ProductionOrder.objects.filter(product=product).exists()
+        if is_first_production:
+            for mapping in mappings:
+                if not InwardEntry.objects.filter(material=mapping.material).exists():
+                    raise serializers.ValidationError(
+                        f"Production failed: The material '{mapping.material.name}' has no inward entry record. "
+                        "Please make an inward entry for all mapped materials before the first production run."
+                    )
 
         # Check for sufficient materials
         for mapping in mappings:
