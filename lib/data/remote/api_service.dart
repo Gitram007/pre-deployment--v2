@@ -165,11 +165,22 @@ class ApiService {
       return json.decode(response.body);
     } else if (response.statusCode == 400) {
       final errorData = json.decode(response.body);
-      // Join all error messages into a single string.
-      final errorMessage = errorData.entries
-          .map((entry) => '${entry.key}: ${entry.value.join(', ')}')
-          .join('\n');
-      throw Exception('Failed: $errorMessage');
+      String errorMessage = 'An unknown error occurred.';
+      if (errorData is Map<String, dynamic>) {
+        if (errorData.containsKey('detail')) {
+          errorMessage = errorData['detail'];
+        } else {
+          errorMessage = errorData.values
+              .expand((value) => value is List ? value : [value])
+              .map((i) => i.toString())
+              .join('\n');
+        }
+      } else if (errorData is List) {
+        errorMessage = errorData.join('\n');
+      } else if (errorData is String) {
+        errorMessage = errorData;
+      }
+      throw Exception(errorMessage);
     } else {
       throw Exception('Failed API Call: ${response.statusCode}');
     }

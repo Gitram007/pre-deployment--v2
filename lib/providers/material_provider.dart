@@ -77,6 +77,7 @@ class MaterialProvider with ChangeNotifier {
       }
     } catch (e) {
       print(e);
+      rethrow;
     }
   }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
-import '../../data/remote/api_service.dart'; // We'll need this for the API call
 
 class UserCreateScreen extends StatefulWidget {
   const UserCreateScreen({super.key});
@@ -33,7 +32,7 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
     _formKey.currentState!.save();
 
     try {
-      await Provider.of<ApiService>(context, listen: false).createUser(
+      await Provider.of<UserProvider>(context, listen: false).createUser(
         _usernameController.text,
         _emailController.text,
         _passwordController.text,
@@ -42,11 +41,12 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
 
       if (!mounted) return;
 
-      // Refresh the user list and pop the screen
-      await Provider.of<UserProvider>(context, listen: false).fetchUsers();
-
-      if (!mounted) return;
-
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User created successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {

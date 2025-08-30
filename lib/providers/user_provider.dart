@@ -46,4 +46,14 @@ class UserProvider with ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<void> createUser(String username, String email, String password, String role) async {
+    try {
+      await apiService.createUser(username, email, password, role);
+      await fetchUsers(); // Refresh the list
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
 }

@@ -65,6 +65,7 @@ class ProductProvider with ChangeNotifier {
       }
     } catch (e) {
       print(e);
+      rethrow;
     }
   }
 

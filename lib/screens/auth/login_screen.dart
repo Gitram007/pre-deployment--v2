@@ -18,13 +18,14 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      try {
-        await Provider.of<AuthProvider>(context, listen: false).login(_username, _password);
-      } catch (e) {
+      final errorMessage = await Provider.of<AuthProvider>(context, listen: false).login(_username, _password);
+      if (errorMessage != null) {
         if (mounted) {
-          final errorMessage = Provider.of<AuthProvider>(context, listen: false).loginError ?? 'An unknown error occurred.';
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage)),
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
           );
         }
       }
