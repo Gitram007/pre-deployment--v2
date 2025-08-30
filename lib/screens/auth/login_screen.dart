@@ -19,8 +19,31 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Fire and forget. The provider will handle state changes.
-      Provider.of<AuthProvider>(context, listen: false).login(_username, _password);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final errorMessage = await authProvider.login(_username, _password);
+
+      if (errorMessage != null) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Login Failed'),
+              content: Text(errorMessage.replaceFirst('Exception: ', '')),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Okay'),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                )
+              ],
+            ),
+          );
+          // After showing the message, reset the status to stop the loading indicator.
+          authProvider.setAuthStatus(AuthStatus.Unauthenticated);
+        }
+      }
+      // If login succeeds, errorMessage is null, and the AuthWrapper will navigate away.
     }
   }
 
