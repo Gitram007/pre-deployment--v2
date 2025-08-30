@@ -416,3 +416,37 @@ def overall_report(request):
 
     return Response(overall_report)
 
+
+@api_view(['GET'])
+@api_permission_classes([IsAuthenticated])
+def overall_material_usage(request):
+    """
+    Calculates overall material usage across all products based on production orders.
+    Query parameters:
+    - frequency: 'daily', 'weekly', or 'monthly'
+    """
+    frequency = request.query_params.get('frequency', 'daily').lower()
+    now = timezone.now()
+    if frequency == 'daily':
+        start_date = now - timedelta(days=1)
+    elif frequency == 'weekly':
+        start_date = now - timedelta(weeks=1)
+    elif frequency == 'monthly':
+        start_date = now - timedelta(days=30) # approximation
+    else:
+        return Response({'error': 'Invalid frequency parameter'}, status=status.HTTP_400_BAD_REQUEST)
+
+    production_orders = ProductionOrder.objects.filter(
+        company=request.user.profile.company,
+        created_at__gte=start_date
+    )
+
+    material_usage = {}
+    for order in production_orders:
+        mappings = ProductMaterialMapping.objects.filter(product=order.product)
+        for mapping in mappings:
+            material_name = mapping.material.name
+            usage = mapping.fixed_quantity * order.quantity
+            material_usage[material_name] = material_usage.get(material_name, 0) + usage
+
+    return Response(material_usage)

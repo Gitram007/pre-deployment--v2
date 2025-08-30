@@ -17,10 +17,15 @@ class _OverallReportScreenState extends State<OverallReportScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      Provider.of<ReportProvider>(context, listen: false)
-          .fetchOverallReport(_selectedFrequency);
+    // Data will now be fetched by the "Generate Report" button
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ReportProvider>(context, listen: false).clearReports();
     });
+    super.dispose();
   }
 
   void _exportToCsv() {
@@ -143,10 +148,15 @@ class _OverallReportScreenState extends State<OverallReportScreen> {
                   setState(() {
                     _selectedFrequency = newValue;
                   });
-                  reportProvider.fetchOverallReport(newValue);
                 }
               },
             ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              reportProvider.fetchOverallReport(_selectedFrequency);
+            },
+            child: const Text('Generate Report'),
           ),
           reportProvider.isLoading
               ? const Center(child: CircularProgressIndicator())

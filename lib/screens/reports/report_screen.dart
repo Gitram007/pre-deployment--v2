@@ -16,7 +16,7 @@ class ReportScreen extends StatefulWidget {
 }
 
 class _ReportScreenState extends State<ReportScreen> {
-  String _selectedReportType = 'overall_report'; // 'by_product', or 'overall_report'
+  String _selectedReportType = 'overall'; // 'overall', 'by_product', or 'overall_report'
   String _selectedFrequency = 'daily'; // 'daily', 'weekly', 'monthly'
   Product? _selectedProduct;
 
@@ -25,8 +25,16 @@ class _ReportScreenState extends State<ReportScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false).fetchProducts();
-      _generateReport();
     });
+  }
+
+  @override
+  void dispose() {
+    // Clear the report data when the screen is disposed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ReportProvider>(context, listen: false).clearReports();
+    });
+    super.dispose();
   }
 
   void _generateReport() {
@@ -47,7 +55,9 @@ class _ReportScreenState extends State<ReportScreen> {
     }
 
     // Fetch the report data
-    if (_selectedReportType == 'overall_report') {
+    if (_selectedReportType == 'overall') {
+      reportProvider.fetchOverallMaterialUsage(_selectedFrequency);
+    } else if (_selectedReportType == 'overall_report') {
       reportProvider.fetchOverallReport(_selectedFrequency);
     } else {
       if (_selectedProduct != null) {
@@ -64,6 +74,9 @@ class _ReportScreenState extends State<ReportScreen> {
     switch (_selectedReportType) {
       case 'overall_report':
         reportData = reportProvider.overallReport;
+        break;
+      case 'overall':
+        reportData = reportProvider.overallMaterialUsage;
         break;
       default: // 'by_product'
         reportData = reportProvider.materialUsage;
@@ -109,6 +122,9 @@ class _ReportScreenState extends State<ReportScreen> {
     switch (_selectedReportType) {
       case 'overall_report':
         reportData = reportProvider.overallReport;
+        break;
+      case 'overall':
+        reportData = reportProvider.overallMaterialUsage;
         break;
       default: // 'by_product'
         reportData = reportProvider.materialUsage;
@@ -158,6 +174,9 @@ class _ReportScreenState extends State<ReportScreen> {
       case 'overall_report':
         reportData = reportProvider.overallReport;
         break;
+      case 'overall':
+        reportData = reportProvider.overallMaterialUsage;
+        break;
       default: // 'by_product'
         reportData = reportProvider.materialUsage;
     }
@@ -177,8 +196,9 @@ class _ReportScreenState extends State<ReportScreen> {
                   child: DropdownButtonFormField<String>(
                     value: _selectedReportType,
                     items: const [
-                      DropdownMenuItem(value: 'overall_report', child: Text('Overall Inward vs. Usage')),
+                      DropdownMenuItem(value: 'overall', child: Text('Overall Usage')),
                       DropdownMenuItem(value: 'by_product', child: Text('Usage by Product')),
+                      DropdownMenuItem(value: 'overall_report', child: Text('Overall Report')),
                     ],
                     onChanged: (value) => setState(() => _selectedReportType = value!),
                   ),
@@ -261,7 +281,35 @@ class _ReportScreenState extends State<ReportScreen> {
                 children: [
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: _buildReportTable(reportData),
+                    child: _selectedReportType == 'overall_report'
+                        ? DataTable(
+                      columns: const [
+                        DataColumn(label: Text('Material')),
+                        DataColumn(label: Text('Inward')),
+                        DataColumn(label: Text('Usage')),
+                        DataColumn(label: Text('Balance')),
+                      ],
+                      rows: (reportData as Map<String, dynamic>).entries.map((entry) {
+                        return DataRow(cells: [
+                          DataCell(Text(entry.key)),
+                          DataCell(Text(entry.value['inward'].toString())),
+                          DataCell(Text(entry.value['usage'].toString())),
+                          DataCell(Text(entry.value['balance'].toString())),
+                        ]);
+                      }).toList(),
+                    )
+                        : DataTable(
+                      columns: const [
+                        DataColumn(label: Text('Material')),
+                        DataColumn(label: Text('Usage')),
+                      ],
+                      rows: (reportData as Map<String, dynamic>).entries.map((entry) {
+                        return DataRow(cells: [
+                          DataCell(Text(entry.key)),
+                          DataCell(Text(entry.value.toString())),
+                        ]);
+                      }).toList(),
+                    ),
                   ),
                 ],
               ),
@@ -272,37 +320,4 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  Widget _buildReportTable(Map<String, dynamic> reportData) {
-    if (_selectedReportType == 'overall_report') {
-      return DataTable(
-        columns: const [
-          DataColumn(label: Text('Material')),
-          DataColumn(label: Text('Inward')),
-          DataColumn(label: Text('Usage')),
-          DataColumn(label: Text('Balance')),
-        ],
-        rows: (reportData).entries.map((entry) {
-          return DataRow(cells: [
-            DataCell(Text(entry.key)),
-            DataCell(Text(entry.value['inward'].toString())),
-            DataCell(Text(entry.value['usage'].toString())),
-            DataCell(Text(entry.value['balance'].toString())),
-          ]);
-        }).toList(),
-      );
-    } else { // 'by_product'
-      return DataTable(
-        columns: const [
-          DataColumn(label: Text('Material')),
-          DataColumn(label: Text('Usage')),
-        ],
-        rows: (reportData).entries.map((entry) {
-          return DataRow(cells: [
-            DataCell(Text(entry.key)),
-            DataCell(Text(entry.value.toString())),
-          ]);
-        }).toList(),
-      );
-    }
-  }
 }
