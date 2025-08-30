@@ -32,7 +32,6 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     final provider = Provider.of<ProductProvider>(context, listen: false);
     final isUpdating = widget.product != null;
 
-    final isUpdating = widget.product != null;
     final future = isUpdating
         ? provider.updateProduct(widget.product!.id, _name)
         : provider.addProduct(_name);

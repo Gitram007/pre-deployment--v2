@@ -49,7 +49,6 @@ class _MaterialEditScreenState extends State<MaterialEditScreen> {
       lowStockThreshold: _lowStockThreshold,
     );
 
-    final isUpdating = widget.material != null;
     final future = isUpdating
         ? provider.updateMaterial(widget.material!.id, material)
         : provider.addMaterial(material);
