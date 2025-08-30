@@ -37,6 +37,7 @@ class MappingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
         print(e);
+        rethrow;
     }
   }
 
@@ -47,6 +48,7 @@ class MappingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
         print(e);
+        rethrow;
     }
   }
 }
