@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
@@ -30,39 +31,44 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Username'),
-                  validator: (val) => val!.isEmpty ? 'Enter a username' : null,
-                  onSaved: (val) => _username = val!,
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                  validator: (val) => val!.isEmpty ? 'Enter a password' : null,
-                  onSaved: (val) => _password = val!,
-                ),
-                const SizedBox(height: 20),
-                Consumer<AuthProvider>(
-                  builder: (context, auth, child) {
-                    if (auth.status == AuthStatus.Authenticating) {
-                      return const CircularProgressIndicator();
-                    }
-                    return ElevatedButton(
-                      onPressed: _submit,
-                      child: const Text('Login'),
-                    );
-                  },
-                ),
-                TextButton(
-                  onPressed: widget.onSwitchToRegister,
-                  child: const Text('Don\'t have an account? Register'),
-                ),
-              ],
+          child: AutofillGroup(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: 'Username'),
+                    autofillHints: const [AutofillHints.username],
+                    validator: (val) => val!.isEmpty ? 'Enter a username' : null,
+                    onSaved: (val) => _username = val!,
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: true,
+                    autofillHints: const [AutofillHints.password],
+                    onEditingComplete: () => TextInput.finishAutofillContext(),
+                    validator: (val) => val!.isEmpty ? 'Enter a password' : null,
+                    onSaved: (val) => _password = val!,
+                  ),
+                  const SizedBox(height: 20),
+                  Consumer<AuthProvider>(
+                    builder: (context, auth, child) {
+                      if (auth.status == AuthStatus.Authenticating) {
+                        return const CircularProgressIndicator();
+                      }
+                      return ElevatedButton(
+                        onPressed: _submit,
+                        child: const Text('Login'),
+                      );
+                    },
+                  ),
+                  TextButton(
+                    onPressed: widget.onSwitchToRegister,
+                    child: const Text('Don\'t have an account? Register'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
