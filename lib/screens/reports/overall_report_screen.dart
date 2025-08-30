@@ -17,9 +17,8 @@ class _OverallReportScreenState extends State<OverallReportScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      Provider.of<ReportProvider>(context, listen: false)
-          .fetchOverallReport(_selectedFrequency);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ReportProvider>(context, listen: false).clearReports();
     });
   }
 
@@ -143,10 +142,15 @@ class _OverallReportScreenState extends State<OverallReportScreen> {
                   setState(() {
                     _selectedFrequency = newValue;
                   });
-                  reportProvider.fetchOverallReport(newValue);
                 }
               },
             ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              reportProvider.fetchOverallReport(_selectedFrequency);
+            },
+            child: const Text('Generate Report'),
           ),
           reportProvider.isLoading
               ? const Center(child: CircularProgressIndicator())

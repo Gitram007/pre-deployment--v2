@@ -416,6 +416,7 @@ def overall_report(request):
 
     return Response(overall_report)
 
+
 @api_view(['GET'])
 @api_permission_classes([IsAuthenticated])
 def overall_material_usage(request):

@@ -56,4 +56,11 @@ class ReportProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void clearReports() {
+    _materialUsage = {};
+    _overallMaterialUsage = {};
+    _overallReport = {};
+    notifyListeners();
+  }
 }

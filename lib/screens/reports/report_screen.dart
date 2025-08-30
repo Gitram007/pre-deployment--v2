@@ -24,8 +24,8 @@ class _ReportScreenState extends State<ReportScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ReportProvider>(context, listen: false).clearReports();
       Provider.of<ProductProvider>(context, listen: false).fetchProducts();
-      _generateReport();
     });
   }
 
@@ -311,4 +311,5 @@ class _ReportScreenState extends State<ReportScreen> {
       ),
     );
   }
+
 }

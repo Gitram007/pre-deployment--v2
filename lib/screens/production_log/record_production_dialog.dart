@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/production_order_provider.dart';
+import '../../providers/material_provider.dart';
 import '../../models/product.dart';
 
 class RecordProductionDialog extends StatefulWidget {
@@ -31,6 +32,10 @@ class _RecordProductionDialogState extends State<RecordProductionDialog> {
       );
 
       if (mounted) {
+        // Refresh material and low stock lists
+        Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
+        Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Production order recorded successfully!'),
