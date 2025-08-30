@@ -12,7 +12,7 @@ import '../../models/dashboard_data.dart';
 import '../../models/calculator_result.dart';
 
 class ApiService {
-  final String _baseUrl = "http://127.0.0.1:8000/api";
+  final String _baseUrl = "testing-beta-2.onrender.com/api";
   final _storage = const FlutterSecureStorage();
   bool _isRefreshing = false;
 

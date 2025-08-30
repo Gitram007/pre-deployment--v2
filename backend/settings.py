@@ -28,16 +28,13 @@ DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = []
 
-ALLOWED_HOSTS.append('testing-beta-sv5z.onrender.com')
 ALLOWED_HOSTS.append('testing-beta-2.onrender.com')
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
-# Local development
-ALLOWED_HOSTS.append('localhost')
-ALLOWED_HOSTS.append('127.0.0.1')
+
 
 # Application definition
 
@@ -68,11 +65,8 @@ MIDDLEWARE = [
 # In a production environment, you should change this to a more restrictive list of origins.
 # For example, if your frontend is hosted at https://example.com, you would use:
 CORS_ALLOWED_ORIGINS = [
-    "https://testing-beta-sv5z.onrender.com",
     "https://testing-beta-2.onrender.com",
-    "https://testing-beta-1.onrender.com",
-    "http://127.0.0.1:8000",
-    "http://local:8000", # The URL of the frontend application
+    "https://pre-deployment-v2.onrender.com",# The URL of the frontend application
     # "https://your-frontend-app.onrender.com", # TODO: Add your frontend URL here
 ]
 
