@@ -183,17 +183,16 @@ class ApiService {
       }
       throw ApiException(errorMessage);
     } else if (response.statusCode == 404) {
-      // Handle "Not Found" errors specifically
+      var errorMessage = 'The requested resource was not found (404).';
       try {
         final errorData = json.decode(response.body);
         if (errorData is Map<String, dynamic> && errorData.containsKey('error')) {
-          throw ApiException(errorData['error']);
+          errorMessage = errorData['error'];
         }
-        throw ApiException('The requested resource was not found.');
       } catch (e) {
-        // If body is not valid JSON or doesn't match expected format
-        throw ApiException('The requested resource was not found (404).');
+        // Ignore JSON parsing errors and use the default message.
       }
+      throw ApiException(errorMessage);
     } else {
       throw ApiException('Failed API Call: ${response.statusCode}');
     }
