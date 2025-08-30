@@ -27,16 +27,16 @@ class ProductionOrderProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addProductionOrder(int productId, int quantity) async {
+  Future<String?> addProductionOrder(int productId, int quantity) async {
     try {
       final newOrder = await apiService.addProductionOrder(
         ProductionOrder(id: 0, productId: productId, quantity: quantity, createdAt: DateTime.now()),
       );
       _orders.insert(0, newOrder); // Insert at the beginning of the list
       notifyListeners();
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 }

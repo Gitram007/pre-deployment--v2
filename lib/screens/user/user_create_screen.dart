@@ -31,16 +31,16 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
     }
     _formKey.currentState!.save();
 
-    try {
-      await Provider.of<UserProvider>(context, listen: false).createUser(
-        _usernameController.text,
-        _emailController.text,
-        _passwordController.text,
-        _selectedRole,
-      );
+    final errorMessage = await Provider.of<UserProvider>(context, listen: false).createUser(
+      _usernameController.text,
+      _emailController.text,
+      _passwordController.text,
+      _selectedRole,
+    );
 
-      if (!mounted) return;
+    if (!mounted) return;
 
+    if (errorMessage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('User created successfully!'),
@@ -48,12 +48,13 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
         ),
       );
       Navigator.of(context).pop();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create user: $e')),
-        );
-      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

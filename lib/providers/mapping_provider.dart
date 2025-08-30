@@ -29,26 +29,26 @@ class MappingProvider with ChangeNotifier {
       return _allMappings.where((m) => m.productId == productId).toList();
   }
 
-  Future<void> addMapping(int productId, int materialId, double fixedQuantity) async {
+  Future<String?> addMapping(int productId, int materialId, double fixedQuantity) async {
     try {
       final newMapping = ProductMaterialMapping(id: 0, productId: productId, materialId: materialId, fixedQuantity: fixedQuantity);
       final createdMapping = await apiService.addMapping(newMapping);
       _allMappings.add(createdMapping);
       notifyListeners();
+      return null;
     } catch (e) {
-        print(e);
-        rethrow;
+      return e.toString();
     }
   }
 
-  Future<void> deleteMapping(int mappingId) async {
+  Future<String?> deleteMapping(int mappingId) async {
     try {
       await apiService.deleteMapping(mappingId);
       _allMappings.removeWhere((m) => m.id == mappingId);
       notifyListeners();
+      return null;
     } catch (e) {
-        print(e);
-        rethrow;
+      return e.toString();
     }
   }
 }

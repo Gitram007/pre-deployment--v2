@@ -42,19 +42,19 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addProduct(String name) async {
+  Future<String?> addProduct(String name) async {
     try {
       final newProduct = await apiService.addProduct(Product(id: 0, name: name));
       _allProducts.add(newProduct);
       search(_searchQuery);
       notifyListeners();
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 
-  Future<void> updateProduct(int id, String name) async {
+  Future<String?> updateProduct(int id, String name) async {
     try {
       final updatedProduct = await apiService.updateProduct(id, Product(id: id, name: name));
       final productIndex = _allProducts.indexWhere((p) => p.id == id);
@@ -63,20 +63,21 @@ class ProductProvider with ChangeNotifier {
         search(_searchQuery);
         notifyListeners();
       }
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 
-  Future<void> deleteProduct(int id) async {
+  Future<String?> deleteProduct(int id) async {
     try {
       await apiService.deleteProduct(id);
       _allProducts.removeWhere((p) => p.id == id);
       search(_searchQuery);
       notifyListeners();
+      return null;
     } catch (e) {
-      print(e);
+      return e.toString();
     }
   }
 }

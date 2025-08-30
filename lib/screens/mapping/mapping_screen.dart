@@ -152,27 +152,27 @@ class _MappingScreenState extends State<MappingScreen> {
                               ? IconButton(
                                   icon: const Icon(Icons.delete),
                                   onPressed: () async {
-                                    try {
-                                      await mappingProvider
-                                          .deleteMapping(mapping.id);
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Mapping deleted successfully!'),
-                                            backgroundColor: Colors.green,
-                                          ),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                              content: Text(
-                                                  'Failed to delete mapping: $e')),
-                                        );
-                                      }
+                                    final errorMessage = await mappingProvider
+                                        .deleteMapping(mapping.id);
+
+                                    if (!mounted) return;
+
+                                    if (errorMessage == null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Mapping deleted successfully!'),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(errorMessage),
+                                            backgroundColor: Theme.of(context).colorScheme.error,
+                                        ),
+                                      );
                                     }
                                   },
                                 )

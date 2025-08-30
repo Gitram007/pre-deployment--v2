@@ -34,7 +34,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     super.dispose();
   }
 
-  void _runCalculation() {
+  void _runCalculation() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedProduct == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -44,8 +44,17 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       }
       final quantity = int.tryParse(_quantityController.text);
       if (quantity != null && quantity > 0) {
-        Provider.of<CalculatorProvider>(context, listen: false)
+        final errorMessage = await Provider.of<CalculatorProvider>(context, listen: false)
             .calculate(_selectedProduct!.id, quantity);
+
+        if (errorMessage != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
       }
     }
   }
@@ -128,15 +137,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   Widget _buildResults(CalculatorProvider provider) {
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
-    }
-
-    if (provider.error != null) {
-      return Center(
-        child: Text(
-          'An error occurred: ${provider.error}',
-          style: const TextStyle(color: Colors.red),
-        ),
-      );
     }
 
     if (provider.results == null) {

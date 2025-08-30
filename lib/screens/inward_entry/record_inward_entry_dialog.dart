@@ -33,32 +33,33 @@ class _RecordInwardEntryDialogState extends State<RecordInwardEntryDialog> {
     }
     _formKey.currentState!.save();
 
-    try {
-      await Provider.of<InwardEntryProvider>(context, listen: false).addInwardEntry(
-        _selectedMaterial!.id,
-        _quantity!,
+    final errorMessage = await Provider.of<InwardEntryProvider>(context, listen: false).addInwardEntry(
+      _selectedMaterial!.id,
+      _quantity!,
+    );
+
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      // This is a new import that will be required.
+      // I need to remember to add it.
+      Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
+      Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inward entry recorded successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
-
-      if (mounted) {
-        // This is a new import that will be required.
-        // I need to remember to add it.
-        Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
-        Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Inward entry recorded successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to record inward entry: $e')),
-        );
-      }
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

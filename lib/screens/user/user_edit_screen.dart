@@ -22,24 +22,26 @@ class _UserEditScreenState extends State<UserEditScreen> {
   }
 
   Future<void> _saveForm() async {
-    try {
-      await Provider.of<UserProvider>(context, listen: false)
-          .updateUser(widget.user.id, _selectedRole);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User updated successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update user: $e')),
-        );
-      }
+    final errorMessage = await Provider.of<UserProvider>(context, listen: false)
+        .updateUser(widget.user.id, _selectedRole);
+
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User updated successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

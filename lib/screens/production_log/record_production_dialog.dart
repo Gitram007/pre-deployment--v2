@@ -24,32 +24,33 @@ class _RecordProductionDialogState extends State<RecordProductionDialog> {
     }
     _formKey.currentState!.save();
 
-    try {
-      await Provider.of<ProductionOrderProvider>(context, listen: false)
-          .addProductionOrder(
-        _selectedProduct!.id,
-        _quantity!,
+    final errorMessage = await Provider.of<ProductionOrderProvider>(context, listen: false)
+        .addProductionOrder(
+      _selectedProduct!.id,
+      _quantity!,
+    );
+
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      // Refresh material and low stock lists
+      Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
+      Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Production order recorded successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
-
-      if (mounted) {
-        // Refresh material and low stock lists
-        Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
-        Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Production order recorded successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to record production: $e')),
-        );
-      }
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

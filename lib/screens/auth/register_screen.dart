@@ -22,18 +22,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       setState(() => _isLoading = true);
-      final success = await Provider.of<AuthProvider>(context, listen: false).register(_company, _username, _email, _password);
+      final errorMessage = await Provider.of<AuthProvider>(context, listen: false).register(_company, _username, _email, _password);
 
       if (!mounted) return;
 
-      if (success) {
+      if (errorMessage == null) {
+        // Success
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful! Please log in.')),
+          const SnackBar(
+            content: Text('Registration successful! Please log in.'),
+            backgroundColor: Colors.green,
+          ),
         );
         widget.onSwitchToLogin();
       } else {
+        // Failure
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration Failed. Company or username may already exist.')),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
       setState(() => _isLoading = false);

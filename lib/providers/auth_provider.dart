@@ -63,13 +63,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> register(String company, String username, String email, String password) async {
+  Future<String?> register(String company, String username, String email, String password) async {
     try {
       await apiService.register(company, username, email, password);
-      return true;
+      return null; // Success
     } catch (e) {
-      print(e);
-      return false;
+      return e.toString();
     }
   }
 
