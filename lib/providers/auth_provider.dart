@@ -49,17 +49,16 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String?> login(String username, String password) async {
+  Future<void> login(String username, String password) async {
     _status = AuthStatus.Authenticating;
     notifyListeners();
     try {
       await apiService.login(username, password);
-      await _initAuth(); // This will set status to Authenticated and notify
-      return null; // Indicates success
+      await _initAuth();
     } catch (e) {
-      // On error, just return the error message. Do not change the state here.
-      // The UI will be responsible for telling the provider to change state.
-      return e.toString();
+      print('Login failed: $e'); // Log for developer
+      _status = AuthStatus.Unauthenticated;
+      notifyListeners();
     }
   }
 
@@ -80,8 +79,4 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setAuthStatus(AuthStatus status) {
-    _status = status;
-    notifyListeners();
-  }
 }
