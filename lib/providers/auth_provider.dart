@@ -49,16 +49,17 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(String username, String password) async {
+  Future<String?> login(String username, String password) async {
     _status = AuthStatus.Authenticating;
     notifyListeners();
     try {
       await apiService.login(username, password);
       await _initAuth();
+      return null;
     } catch (e) {
       _status = AuthStatus.Unauthenticated;
       notifyListeners();
-      rethrow;
+      return e.toString().replaceFirst('Exception: ', '');
     }
   }
 
