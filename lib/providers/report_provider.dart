@@ -4,14 +4,12 @@ import '../data/remote/api_service.dart';
 class ReportProvider with ChangeNotifier {
   final ApiService apiService;
   Map<String, dynamic> _materialUsage = {};
-  Map<String, dynamic> _overallMaterialUsage = {};
   Map<String, dynamic> _overallReport = {};
   bool _isLoading = false;
 
   ReportProvider({required this.apiService});
 
   Map<String, dynamic> get materialUsage => _materialUsage;
-  Map<String, dynamic> get overallMaterialUsage => _overallMaterialUsage;
   Map<String, dynamic> get overallReport => _overallReport;
   bool get isLoading => _isLoading;
 
@@ -23,20 +21,6 @@ class ReportProvider with ChangeNotifier {
     } catch (e) {
       print(e);
       _materialUsage = {};
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> fetchOverallMaterialUsage(String frequency) async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      _overallMaterialUsage = await apiService.getOverallMaterialUsage(frequency);
-    } catch (e) {
-      print(e);
-      _overallMaterialUsage = {};
     } finally {
       _isLoading = false;
       notifyListeners();

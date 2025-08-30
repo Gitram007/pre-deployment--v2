@@ -8,7 +8,6 @@ from .views import (
     InwardEntryViewSet,
     LowStockMaterialViewSet,
     material_usage_by_product,
-    overall_material_usage,
     overall_report,
     dashboard_data,
     material_calculator
@@ -32,6 +31,5 @@ urlpatterns = [
     path('dashboard/', dashboard_data, name='dashboard-data'),
     path('calculator/', material_calculator, name='material-calculator'),
     path('reports/material-usage/<int:product_id>/', material_usage_by_product, name='material-usage-by-product'),
-    path('reports/overall-material-usage/', overall_material_usage, name='overall-material-usage'),
     path('reports/overall-report/', overall_report, name='overall-report'),
 ]
