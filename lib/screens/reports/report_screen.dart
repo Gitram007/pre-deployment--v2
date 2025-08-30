@@ -24,17 +24,9 @@ class _ReportScreenState extends State<ReportScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ReportProvider>(context, listen: false).clearReports();
       Provider.of<ProductProvider>(context, listen: false).fetchProducts();
     });
-  }
-
-  @override
-  void dispose() {
-    // Clear the report data when the screen is disposed
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ReportProvider>(context, listen: false).clearReports();
-    });
-    super.dispose();
   }
 
   void _generateReport() {

@@ -17,15 +17,9 @@ class _OverallReportScreenState extends State<OverallReportScreen> {
   @override
   void initState() {
     super.initState();
-    // Data will now be fetched by the "Generate Report" button
-  }
-
-  @override
-  void dispose() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ReportProvider>(context, listen: false).clearReports();
     });
-    super.dispose();
   }
 
   void _exportToCsv() {
