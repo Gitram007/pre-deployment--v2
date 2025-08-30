@@ -19,20 +19,22 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      try {
-        await authProvider.login(_username, _password);
-      } catch (e) {
+      final errorMessage = await authProvider.login(_username, _password);
+
+      // If login fails, errorMessage will not be null.
+      if (errorMessage != null) {
         if (mounted) {
-          // Set status back to unauthenticated AFTER catching the error
-          authProvider.setAuthStatus(AuthStatus.Unauthenticated);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()), // Will use ApiException's clean message
+              content: Text(errorMessage.replaceFirst('Exception: ', '')),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
+          // After showing the message, reset the status to stop the loading indicator.
+          authProvider.setAuthStatus(AuthStatus.Unauthenticated);
         }
       }
+      // If login succeeds, errorMessage is null, and the AuthWrapper will navigate away.
     }
   }
 
