@@ -165,11 +165,12 @@ class ApiService {
       return json.decode(response.body);
     } else if (response.statusCode == 400) {
       final errorData = json.decode(response.body);
-      // Join all error messages into a single string.
-      final errorMessage = errorData.entries
-          .map((entry) => '${entry.key}: ${entry.value.join(', ')}')
+      // Flatten all error messages from the backend into a single string.
+      final errorMessage = errorData.values
+          .expand((i) => i as List)
+          .map((i) => i.toString())
           .join('\n');
-      throw Exception('Failed: $errorMessage');
+      throw Exception(errorMessage.isNotEmpty ? errorMessage : 'An unknown error occurred.');
     } else {
       throw Exception('Failed API Call: ${response.statusCode}');
     }

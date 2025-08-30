@@ -12,7 +12,6 @@ class AuthProvider with ChangeNotifier {
   AuthStatus _status = AuthStatus.Uninitialized;
   String? _token;
   UserProfile? _user;
-  String? _loginError;
 
   AuthProvider({required this.apiService}) {
     _initAuth();
@@ -21,7 +20,6 @@ class AuthProvider with ChangeNotifier {
   AuthStatus get status => _status;
   String? get token => _token;
   UserProfile? get user => _user;
-  String? get loginError => _loginError;
   bool get isAdmin => _user?.profile.role == 'admin';
 
   Future<void> _initAuth() async {
@@ -52,7 +50,6 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> login(String username, String password) async {
-    _loginError = null;
     _status = AuthStatus.Authenticating;
     notifyListeners();
     try {
@@ -60,7 +57,6 @@ class AuthProvider with ChangeNotifier {
       await _initAuth();
     } catch (e) {
       _status = AuthStatus.Unauthenticated;
-      _loginError = e.toString();
       notifyListeners();
       rethrow;
     }

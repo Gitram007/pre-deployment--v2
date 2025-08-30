@@ -22,9 +22,12 @@ class _LoginScreenState extends State<LoginScreen> {
         await Provider.of<AuthProvider>(context, listen: false).login(_username, _password);
       } catch (e) {
         if (mounted) {
-          final errorMessage = Provider.of<AuthProvider>(context, listen: false).loginError ?? 'An unknown error occurred.';
+          final message = e.toString().replaceFirst('Exception: ', '');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage)),
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
           );
         }
       }
