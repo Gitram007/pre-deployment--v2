@@ -18,12 +18,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final errorMessage = await Provider.of<AuthProvider>(context, listen: false).login(_username, _password);
-      if (errorMessage != null) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      try {
+        await authProvider.login(_username, _password);
+      } catch (e) {
         if (mounted) {
+          // Set status back to unauthenticated AFTER catching the error
+          authProvider.setAuthStatus(AuthStatus.Unauthenticated);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(errorMessage),
+              content: Text(e.toString()), // Will use ApiException's clean message
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );

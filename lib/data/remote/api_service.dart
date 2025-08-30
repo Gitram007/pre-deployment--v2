@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package.flutter_secure_storage/flutter_secure_storage.dart';
+import 'api_exception.dart';
 import '../../models/product.dart';
 import '../../models/material.dart';
 import '../../models/product_material_mapping.dart';
@@ -85,7 +86,7 @@ class ApiService {
     } else {
       // Throw an exception with the error message from the server
       final errorData = json.decode(response.body);
-      throw Exception(errorData['detail'] ?? 'Failed to login');
+      throw ApiException(errorData['detail'] ?? 'Failed to login');
     }
   }
 
@@ -180,9 +181,9 @@ class ApiService {
       } else if (errorData is String) {
         errorMessage = errorData;
       }
-      throw Exception(errorMessage);
+      throw ApiException(errorMessage);
     } else {
-      throw Exception('Failed API Call: ${response.statusCode}');
+      throw ApiException('Failed API Call: ${response.statusCode}');
     }
   }
 
