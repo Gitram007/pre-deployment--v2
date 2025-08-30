@@ -13,20 +13,17 @@ class CalculatorProvider with ChangeNotifier {
   List<CalculatorResult>? _results;
   List<CalculatorResult>? get results => _results;
 
-  String? _error;
-  String? get error => _error;
-
-  Future<void> calculate(int productId, int quantity) async {
+  Future<String?> calculate(int productId, int quantity) async {
     _isLoading = true;
-    _error = null;
     _results = null; // Clear previous results
     notifyListeners();
 
     try {
       final calculatedResults = await apiService.calculateMaterials(productId, quantity);
       _results = calculatedResults;
+      return null;
     } catch (e) {
-      _error = e.toString();
+      return e.toString();
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -35,7 +32,6 @@ class CalculatorProvider with ChangeNotifier {
 
   void clear() {
     _results = null;
-    _error = null;
     notifyListeners();
   }
 }

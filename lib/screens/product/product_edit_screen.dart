@@ -32,28 +32,29 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     final provider = Provider.of<ProductProvider>(context, listen: false);
     final isUpdating = widget.product != null;
 
-    try {
-      if (isUpdating) {
-        await provider.updateProduct(widget.product!.id, _name);
-      } else {
-        await provider.addProduct(_name);
-      }
+    final future = isUpdating
+        ? provider.updateProduct(widget.product!.id, _name)
+        : provider.addProduct(_name);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Product ${isUpdating ? 'updated' : 'created'} successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save product: $e')),
-        );
-      }
+    final errorMessage = await future;
+
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Product ${isUpdating ? 'updated' : 'created'} successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

@@ -18,17 +18,23 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final errorMessage = await Provider.of<AuthProvider>(context, listen: false).login(_username, _password);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final errorMessage = await authProvider.login(_username, _password);
+
+      // If login fails, errorMessage will not be null.
       if (errorMessage != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(errorMessage),
+              content: Text(errorMessage.replaceFirst('Exception: ', '')),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
+          // After showing the message, reset the status to stop the loading indicator.
+          authProvider.setAuthStatus(AuthStatus.Unauthenticated);
         }
       }
+      // If login succeeds, errorMessage is null, and the AuthWrapper will navigate away.
     }
   }
 

@@ -83,23 +83,25 @@ class _UserListScreenState extends State<UserListScreen> {
                                       TextButton(
                                         child: const Text('Yes'),
                                         onPressed: () async {
-                                          try {
-                                            await Provider.of<UserProvider>(context, listen: false)
-                                                .deleteUser(user.id);
-                                            if (mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(
-                                                  content: Text('User deleted successfully!'),
-                                                  backgroundColor: Colors.green,
-                                                ),
-                                              );
-                                            }
-                                          } catch (e) {
-                                            if (mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('Failed to delete user: $e')),
-                                              );
-                                            }
+                                          final errorMessage = await Provider.of<UserProvider>(context, listen: false)
+                                              .deleteUser(user.id);
+
+                                          if (!mounted) return;
+
+                                          if (errorMessage == null) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('User deleted successfully!'),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text(errorMessage),
+                                                backgroundColor: Theme.of(context).colorScheme.error,
+                                              ),
+                                            );
                                           }
                                           Navigator.of(ctx).pop();
                                         },

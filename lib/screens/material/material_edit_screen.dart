@@ -40,41 +40,42 @@ class _MaterialEditScreenState extends State<MaterialEditScreen> {
     final provider = Provider.of<MaterialProvider>(context, listen: false);
     final isUpdating = widget.material != null;
 
-    try {
-      final material = AppMaterial(
-        id: widget.material?.id ?? 0,
-        name: _name,
-        unit: _unit,
-        quantity: _quantity,
-        style: _style,
-        lowStockThreshold: _lowStockThreshold,
+    final material = AppMaterial(
+      id: widget.material?.id ?? 0,
+      name: _name,
+      unit: _unit,
+      quantity: _quantity,
+      style: _style,
+      lowStockThreshold: _lowStockThreshold,
+    );
+
+    final future = isUpdating
+        ? provider.updateMaterial(widget.material!.id, material)
+        : provider.addMaterial(material);
+
+    final errorMessage = await future;
+
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      // Refresh material and low stock lists
+      Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
+      Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Material ${isUpdating ? 'updated' : 'created'} successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
-
-      if (isUpdating) {
-        await provider.updateMaterial(widget.material!.id, material);
-      } else {
-        await provider.addMaterial(material);
-      }
-
-      if (mounted) {
-        // Refresh material and low stock lists
-        Provider.of<MaterialProvider>(context, listen: false).fetchMaterials();
-        Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Material ${isUpdating ? 'updated' : 'created'} successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save material: $e')),
-        );
-      }
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

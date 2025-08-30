@@ -27,16 +27,16 @@ class InwardEntryProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addInwardEntry(int materialId, double quantity) async {
+  Future<String?> addInwardEntry(int materialId, double quantity) async {
     try {
       final newEntry = await apiService.addInwardEntry(
         InwardEntry(id: 0, materialId: materialId, quantity: quantity, createdAt: DateTime.now()),
       );
       _entries.insert(0, newEntry); // Insert at the beginning of the list
       notifyListeners();
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 }

@@ -25,28 +25,29 @@ class _MappingAddDialogState extends State<MappingAddDialog> {
     }
     _formKey.currentState!.save();
 
-    try {
-      await Provider.of<MappingProvider>(context, listen: false).addMapping(
-        widget.productId,
-        _selectedMaterial!.id,
-        _fixedQuantity!,
-      );
+    final errorMessage = await Provider.of<MappingProvider>(context, listen: false).addMapping(
+      widget.productId,
+      _selectedMaterial!.id,
+      _fixedQuantity!,
+    );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Mapping added successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add mapping: $e')),
-        );
-      }
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mapping added successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

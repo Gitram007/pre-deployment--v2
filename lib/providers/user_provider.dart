@@ -26,34 +26,34 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateUser(int userId, String role) async {
+  Future<String?> updateUser(int userId, String role) async {
     try {
       await apiService.updateUser(userId, role);
       await fetchUsers(); // Refresh the list
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 
-  Future<void> deleteUser(int userId) async {
+  Future<String?> deleteUser(int userId) async {
     try {
       await apiService.deleteUser(userId);
       _users.removeWhere((user) => user.id == userId);
       notifyListeners();
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 
-  Future<void> createUser(String username, String email, String password, String role) async {
+  Future<String?> createUser(String username, String email, String password, String role) async {
     try {
       await apiService.createUser(username, email, password, role);
       await fetchUsers(); // Refresh the list
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 }

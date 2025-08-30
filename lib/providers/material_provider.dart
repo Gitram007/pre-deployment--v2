@@ -54,19 +54,19 @@ class MaterialProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addMaterial(AppMaterial material) async {
+  Future<String?> addMaterial(AppMaterial material) async {
     try {
       final newMaterial = await apiService.addMaterial(material);
       _allMaterials.add(newMaterial);
       search(_searchQuery);
       notifyListeners();
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 
-  Future<void> updateMaterial(int id, AppMaterial material) async {
+  Future<String?> updateMaterial(int id, AppMaterial material) async {
     try {
       final updatedMaterial = await apiService.updateMaterial(id, material);
       final materialIndex = _allMaterials.indexWhere((m) => m.id == id);
@@ -75,20 +75,21 @@ class MaterialProvider with ChangeNotifier {
         search(_searchQuery);
         notifyListeners();
       }
+      return null;
     } catch (e) {
-      print(e);
-      rethrow;
+      return e.toString();
     }
   }
 
-  Future<void> deleteMaterial(int id) async {
+  Future<String?> deleteMaterial(int id) async {
     try {
       await apiService.deleteMaterial(id);
       _allMaterials.removeWhere((m) => m.id == id);
       search(_searchQuery);
       notifyListeners();
+      return null;
     } catch (e) {
-      print(e);
+      return e.toString();
     }
   }
 }

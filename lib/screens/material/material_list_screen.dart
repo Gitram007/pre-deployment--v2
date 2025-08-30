@@ -112,29 +112,29 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                                             TextButton(
                                               child: const Text('Yes'),
                                               onPressed: () async {
-                                                try {
-                                                  await provider
-                                                      .deleteMaterial(material.id);
-                                                  if (mounted) {
-                                                    // Refresh low stock list
-                                                    Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
-                                                    ScaffoldMessenger.of(context)
-                                                        .showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text('Material deleted successfully!'),
-                                                        backgroundColor: Colors.green,
-                                                      ),
-                                                    );
-                                                  }
-                                                } catch (e) {
-                                                  if (mounted) {
-                                                    ScaffoldMessenger.of(context)
-                                                        .showSnackBar(
-                                                      SnackBar(
-                                                          content: Text(
-                                                              'Failed to delete material: $e')),
-                                                    );
-                                                  }
+                                                final errorMessage = await provider
+                                                    .deleteMaterial(material.id);
+
+                                                if (!mounted) return;
+
+                                                if (errorMessage == null) {
+                                                  // Refresh low stock list
+                                                  Provider.of<MaterialProvider>(context, listen: false).fetchLowStockMaterials();
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text('Material deleted successfully!'),
+                                                      backgroundColor: Colors.green,
+                                                    ),
+                                                  );
+                                                } else {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                        content: Text(errorMessage),
+                                                        backgroundColor: Theme.of(context).colorScheme.error,
+                                                    ),
+                                                  );
                                                 }
                                                 Navigator.of(ctx).pop();
                                               },

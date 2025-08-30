@@ -54,22 +54,21 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
     try {
       await apiService.login(username, password);
-      await _initAuth();
-      return null;
+      await _initAuth(); // This will set status to Authenticated and notify
+      return null; // Indicates success
     } catch (e) {
-      _status = AuthStatus.Unauthenticated;
-      notifyListeners();
-      return e.toString().replaceFirst('Exception: ', '');
+      // On error, just return the error message. Do not change the state here.
+      // The UI will be responsible for telling the provider to change state.
+      return e.toString();
     }
   }
 
-  Future<bool> register(String company, String username, String email, String password) async {
+  Future<String?> register(String company, String username, String email, String password) async {
     try {
       await apiService.register(company, username, email, password);
-      return true;
+      return null; // Success
     } catch (e) {
-      print(e);
-      return false;
+      return e.toString();
     }
   }
 
@@ -78,6 +77,11 @@ class AuthProvider with ChangeNotifier {
     _token = null;
     _user = null;
     await apiService.logout();
+    notifyListeners();
+  }
+
+  void setAuthStatus(AuthStatus status) {
+    _status = status;
     notifyListeners();
   }
 }
